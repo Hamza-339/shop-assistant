@@ -1,7 +1,7 @@
 import hashlib
 
 from app.models import Citation
-from app.qa import answer_question
+from app.qa import NO_GROUNDED_ANSWER, answer_question
 from app.store import StoreEntry, VectorStore
 
 
@@ -78,3 +78,17 @@ def test_answer_question_grounds_a_policy_question_with_a_citation():
 
     assert result.answer == "Refunds are accepted within 30 days."
     assert result.citations == [Citation(id="refund", kind="policy")]
+
+
+def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question():
+    embedder = FakeEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="should never be returned")
+
+    result = answer_question(
+        "Do you have a size guide for finding the right fit?", store, embedder, claude_client
+    )
+
+    assert result.answer == NO_GROUNDED_ANSWER
+    assert result.citations == []
+    assert claude_client.last_context is None
