@@ -46,3 +46,9 @@ def test_run_sync_removes_products_no_longer_returned_by_the_client():
     run_sync(StubShopifyClient([], []), store, LocalEmbedder())
 
     assert store.entries == []
+
+
+def test_fake_shopify_client_exposes_no_way_to_fetch_pages():
+    client = FakeShopifyClient()
+
+    assert not hasattr(client, "get_pages")
