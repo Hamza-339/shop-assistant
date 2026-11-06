@@ -5,15 +5,26 @@ from app.qa import answer_question
 from app.store import StoreEntry, VectorStore
 
 
+STOPWORDS = {
+    "a", "an", "the", "is", "are", "do", "you", "your", "what", "how", "many",
+    "for", "of", "in", "on", "within", "to", "i", "have", "that", "this",
+    "does", "my", "me", "about", "tell",
+}
+
+
 class FakeEmbedder:
-    """Bag-of-words hashed embedder: shared words score similar, unlike the
-    production LocalEmbedder's content-blind hash, so retrieval is testable."""
+    """Bag-of-words hashed embedder: shared meaningful words score similar,
+    unlike the production LocalEmbedder's content-blind hash, so retrieval
+    is testable."""
 
     dimensions = 64
 
     def embed(self, text: str) -> list[float]:
         vector = [0.0] * self.dimensions
         for word in text.lower().split():
+            word = word.strip("?,.")
+            if word in STOPWORDS:
+                continue
             index = int(hashlib.sha256(word.encode("utf-8")).hexdigest(), 16) % self.dimensions
             vector[index] += 1.0
         return vector
@@ -56,3 +67,14 @@ def test_answer_question_grounds_a_product_question_with_a_citation():
 
     assert result.answer == "It's a breathable cotton t-shirt."
     assert result.citations == [Citation(id="gid://shopify/Product/1", kind="product")]
+
+
+def test_answer_question_grounds_a_policy_question_with_a_citation():
+    embedder = FakeEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="Refunds are accepted within 30 days.")
+
+    result = answer_question("What is the refund policy?", store, embedder, claude_client)
+
+    assert result.answer == "Refunds are accepted within 30 days."
+    assert result.citations == [Citation(id="refund", kind="policy")]

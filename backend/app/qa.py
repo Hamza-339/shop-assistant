@@ -6,7 +6,7 @@ from app.models import AnswerResult, Citation
 from app.store import StoreEntry, VectorStore
 
 NO_GROUNDED_ANSWER = "I don't have information to answer that."
-MATCH_THRESHOLD = 0.6
+MATCH_THRESHOLD = 0.3
 
 
 def _cosine_similarity(a: list[float], b: list[float]) -> float:
