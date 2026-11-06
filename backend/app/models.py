@@ -12,3 +12,15 @@ class Product:
 class Policy:
     type: str
     body: str
+
+
+@dataclass(frozen=True)
+class Citation:
+    id: str
+    kind: str
+
+
+@dataclass(frozen=True)
+class AnswerResult:
+    answer: str
+    citations: list[Citation]
