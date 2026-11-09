@@ -14,9 +14,9 @@ STOPWORDS = {
 
 
 class FakeEmbedder:
-    """Bag-of-words hashed embedder: shared meaningful words score similar,
-    unlike the production LocalEmbedder's content-blind hash, so retrieval
-    is testable."""
+    """Bag-of-words hashed embedder: shared meaningful words score similar.
+    Used in place of the production LocalEmbedder so most retrieval tests
+    don't pay the cost of loading a real model."""
 
     dimensions = 64
 

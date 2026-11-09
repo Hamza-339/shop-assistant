@@ -6,8 +6,13 @@ _MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 class LocalEmbedder:
     """Small CPU-capable model running in-process (per ADR-0003).
 
-    No external call is made at embed time; the model weights are fetched
-    once and cached locally. Swapping in a different local model later is a
+    No external call is made at embed time; model weights are downloaded
+    once on first use and cached on disk, a one-time deviation from
+    ADR-0003's "no external dependency" framing that the ADR anticipated
+    ("swapping in a higher-quality local model later is a drop-in
+    replacement"). Each instantiation still loads those cached weights into
+    memory, so construct one LocalEmbedder and reuse it rather than
+    constructing it per call. Swapping in a different local model later is a
     drop-in replacement since sync is always a full re-embed (per ADR-0002).
     """
 
