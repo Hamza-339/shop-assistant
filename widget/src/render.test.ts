@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { FALLBACK_MESSAGE, toRenderedMessage } from "./render.js";
+import { FALLBACK_MESSAGE, formatCitation, toRenderedMessage } from "./render.js";
 
 describe("toRenderedMessage", () => {
   it("passes through the answer and citations for a grounded response", () => {
@@ -27,5 +27,17 @@ describe("toRenderedMessage", () => {
       text: FALLBACK_MESSAGE,
       citations: [],
     });
+  });
+});
+
+describe("formatCitation", () => {
+  it("labels a product citation with its kind and id", () => {
+    expect(formatCitation({ id: "gid://shopify/Product/1", kind: "product" })).toBe(
+      "Product · gid://shopify/Product/1",
+    );
+  });
+
+  it("labels a policy citation with its kind and id", () => {
+    expect(formatCitation({ id: "refund", kind: "policy" })).toBe("Policy · refund");
   });
 });
