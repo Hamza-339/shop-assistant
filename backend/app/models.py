@@ -24,3 +24,4 @@ class Citation:
 class AnswerResult:
     answer: str
     citations: list[Citation]
+    deflected: bool = False
