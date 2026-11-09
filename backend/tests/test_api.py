@@ -3,7 +3,15 @@ import hashlib
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import STOREFRONT_ORIGIN, _RATE_LIMIT_HITS, app, get_claude_client, get_embedder, get_store
+from app.main import (
+    RATE_LIMIT_WINDOW_SECONDS,
+    STOREFRONT_ORIGIN,
+    _RATE_LIMIT_HITS,
+    app,
+    get_claude_client,
+    get_embedder,
+    get_store,
+)
 from app.store import StoreEntry, VectorStore
 
 DISALLOWED_ORIGIN = "https://evil.example.com"
@@ -107,3 +115,21 @@ def test_api_rate_limits_after_20_requests_in_a_minute_from_one_ip(client):
     response = client.post("/api", json={"question": "Tell me about the Classic Cotton T-Shirt"})
 
     assert response.status_code == 429
+
+
+def test_api_allows_requests_again_after_the_rate_limit_window_expires(client, monkeypatch):
+    fake_now = [0.0]
+    monkeypatch.setattr("app.main.time.monotonic", lambda: fake_now[0])
+
+    for _ in range(20):
+        response = client.post("/api", json={"question": "Tell me about the Classic Cotton T-Shirt"})
+        assert response.status_code == 200
+
+    blocked = client.post("/api", json={"question": "Tell me about the Classic Cotton T-Shirt"})
+    assert blocked.status_code == 429
+
+    fake_now[0] += RATE_LIMIT_WINDOW_SECONDS + 1
+
+    response = client.post("/api", json={"question": "Tell me about the Classic Cotton T-Shirt"})
+
+    assert response.status_code == 200
