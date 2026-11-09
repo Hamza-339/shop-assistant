@@ -1,5 +1,6 @@
 import hashlib
 
+from app.embeddings import LocalEmbedder
 from app.models import Citation
 from app.qa import DEFLECTION_MESSAGE, NO_GROUNDED_ANSWER, answer_question
 from app.store import StoreEntry, VectorStore
@@ -160,6 +161,18 @@ def test_answer_question_grounds_a_policy_question_that_mentions_a_deflected_key
 
     assert result.answer == "Refunds are accepted within 30 days."
     assert result.citations == [Citation(id="refund", kind="policy")]
+    assert result.deflected is False
+
+
+def test_answer_question_retrieves_the_right_product_against_the_real_embedder():
+    embedder = LocalEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="It's a breathable cotton t-shirt.")
+
+    result = answer_question("Tell me about the Classic Cotton T-Shirt", store, embedder, claude_client)
+
+    assert result.answer == "It's a breathable cotton t-shirt."
+    assert result.citations == [Citation(id="gid://shopify/Product/1", kind="product")]
     assert result.deflected is False
 
 
