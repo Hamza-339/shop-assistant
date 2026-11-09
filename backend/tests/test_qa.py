@@ -123,6 +123,19 @@ def test_answer_question_deflects_a_stock_level_question():
     assert claude_client.last_context is None
 
 
+def test_answer_question_deflects_a_discount_code_question():
+    embedder = FakeEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="should never be returned")
+
+    result = answer_question("Why isn't my discount code working?", store, embedder, claude_client)
+
+    assert result.answer == DEFLECTION_MESSAGE
+    assert result.citations == []
+    assert result.deflected is True
+    assert claude_client.last_context is None
+
+
 def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question():
     embedder = FakeEmbedder()
     store = _seeded_store(embedder)
