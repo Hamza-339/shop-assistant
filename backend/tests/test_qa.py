@@ -136,6 +136,33 @@ def test_answer_question_deflects_a_discount_code_question():
     assert claude_client.last_context is None
 
 
+def test_answer_question_deflects_an_order_status_question_using_the_plural_form():
+    embedder = FakeEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="should never be returned")
+
+    result = answer_question("What's the status of my orders?", store, embedder, claude_client)
+
+    assert result.answer == DEFLECTION_MESSAGE
+    assert result.citations == []
+    assert result.deflected is True
+    assert claude_client.last_context is None
+
+
+def test_answer_question_grounds_a_policy_question_that_mentions_a_deflected_keyword():
+    embedder = FakeEmbedder()
+    store = _seeded_store(embedder)
+    claude_client = FakeClaudeClient(response="Refunds are accepted within 30 days.")
+
+    result = answer_question(
+        "What is the refund policy if an item is out of stock?", store, embedder, claude_client
+    )
+
+    assert result.answer == "Refunds are accepted within 30 days."
+    assert result.citations == [Citation(id="refund", kind="policy")]
+    assert result.deflected is False
+
+
 def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question():
     embedder = FakeEmbedder()
     store = _seeded_store(embedder)
