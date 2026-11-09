@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "esbuild src/widget.ts --bundle --outfile=dist/widget.js --format=iife",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
     "eslint": "^9.14.0",
     "typescript": "^5.6.0",
-    "typescript-eslint": "^8.13.0"
+    "typescript-eslint": "^8.13.0",
+    "vitest": "^2.1.9"
   }
 }
