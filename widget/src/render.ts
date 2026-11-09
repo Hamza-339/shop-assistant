@@ -22,3 +22,8 @@ export function toRenderedMessage(response: ApiResponse): RenderedMessage {
   }
   return { text: response.answer, citations: response.citations };
 }
+
+export function formatCitation(citation: Citation): string {
+  const kindLabel = citation.kind.charAt(0).toUpperCase() + citation.kind.slice(1);
+  return `${kindLabel} · ${citation.id}`;
+}
