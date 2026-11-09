@@ -155,7 +155,7 @@ def test_answer_question_grounds_a_policy_question_that_mentions_a_deflected_key
     claude_client = FakeClaudeClient(response="Refunds are accepted within 30 days.")
 
     result = answer_question(
-        "What is the refund policy if an item is out of stock?", store, embedder, claude_client
+        "What is the refund policy on items that are out of stock?", store, embedder, claude_client
     )
 
     assert result.answer == "Refunds are accepted within 30 days."
