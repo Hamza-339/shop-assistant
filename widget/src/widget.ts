@@ -136,6 +136,9 @@ async function askQuestion(apiBase: string, question: string): Promise<ApiRespon
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question }),
   });
+  if (!response.ok) {
+    throw new Error(`/api responded with ${response.status}`);
+  }
   return (await response.json()) as ApiResponse;
 }
 
