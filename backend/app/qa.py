@@ -9,7 +9,7 @@ NO_GROUNDED_ANSWER = "I don't have information to answer that."
 DEFLECTION_MESSAGE = "I'm not able to help with that here, but our support team can."
 MATCH_THRESHOLD = 0.3
 
-DEFLECTED_KEYWORDS = {"order"}
+DEFLECTED_KEYWORDS = {"order", "payment"}
 
 
 def _is_deflected_topic(question: str) -> bool:
