@@ -17,6 +17,9 @@ class LocalEmbedder:
     """
 
     dimensions = 384
+    # Picked from real cosine scores: unrelated text scores up to ~0.39,
+    # genuine matches score 0.58+ (per #12).
+    match_threshold = 0.45
 
     def __init__(self) -> None:
         self._model = SentenceTransformer(_MODEL_NAME)
