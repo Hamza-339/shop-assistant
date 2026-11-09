@@ -7,7 +7,6 @@ from app.store import StoreEntry, VectorStore
 
 NO_GROUNDED_ANSWER = "I don't have information to answer that."
 DEFLECTION_MESSAGE = "I'm not able to help with that here, but our support team can."
-MATCH_THRESHOLD = 0.3
 
 DEFLECTED_KEYWORDS = {"order", "payment", "stock", "inventory", "discount", "coupon", "promo"}
 GROUNDED_OVERRIDE_KEYWORDS = {"policy"}
@@ -51,7 +50,7 @@ def answer_question(
             best_score = score
             best_entry = entry
 
-    if best_entry is None or best_score < MATCH_THRESHOLD:
+    if best_entry is None or best_score < embedder.match_threshold:
         return AnswerResult(answer=NO_GROUNDED_ANSWER, citations=[])
 
     answer = claude_client.generate_answer(question, [best_entry])

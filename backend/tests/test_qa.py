@@ -19,6 +19,7 @@ class FakeEmbedder:
     don't pay the cost of loading a real model."""
 
     dimensions = 64
+    match_threshold = 0.3
 
     def embed(self, text: str) -> list[float]:
         vector = [0.0] * self.dimensions

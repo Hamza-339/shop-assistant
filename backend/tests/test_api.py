@@ -19,6 +19,7 @@ DISALLOWED_ORIGIN = "https://evil.example.com"
 
 class FakeEmbedder:
     dimensions = 8
+    match_threshold = 0.3
 
     def embed(self, text: str) -> list[float]:
         digest = hashlib.sha256(text.encode("utf-8")).digest()
