@@ -6,7 +6,15 @@ from app.models import AnswerResult, Citation
 from app.store import StoreEntry, VectorStore
 
 NO_GROUNDED_ANSWER = "I don't have information to answer that."
+DEFLECTION_MESSAGE = "I'm not able to help with that here, but our support team can."
 MATCH_THRESHOLD = 0.3
+
+DEFLECTED_KEYWORDS = {"order"}
+
+
+def _is_deflected_topic(question: str) -> bool:
+    words = {word.strip("?,.#") for word in question.lower().split()}
+    return bool(words & DEFLECTED_KEYWORDS)
 
 
 def _cosine_similarity(a: list[float], b: list[float]) -> float:
@@ -21,6 +29,9 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
 def answer_question(
     question: str, store: VectorStore, embedder: LocalEmbedder, claude_client: ClaudeClient
 ) -> AnswerResult:
+    if _is_deflected_topic(question):
+        return AnswerResult(answer=DEFLECTION_MESSAGE, citations=[], deflected=True)
+
     entries = store.entries
     question_embedding = embedder.embed(question)
 
