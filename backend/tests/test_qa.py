@@ -189,6 +189,24 @@ def test_answer_question_retrieves_the_right_policy_against_the_real_embedder():
     assert result.deflected is False
 
 
+def test_answer_question_grounds_a_weakly_scored_policy_question_against_the_real_embedder():
+    embedder = LocalEmbedder()
+    store = VectorStore()
+    terms_text = (
+        "terms_of_service\nshop-assistant-demo operates this store, powered by Shopify, to provide the "
+        "Services. By visiting, interacting with, or using the Services you agree to be bound by these "
+        "Terms of Service and the Privacy Policy. You represent that you are at least the age of majority "
+        "in your state or province of residence to use the Services."
+    )
+    store.add(StoreEntry(id="terms_of_service", kind="policy", text=terms_text, embedding=embedder.embed(terms_text)))
+    claude_client = FakeClaudeClient(response="You agree to the Terms of Service and Privacy Policy.")
+
+    result = answer_question("What am I agreeing to by using your site?", store, embedder, claude_client)
+
+    assert result.answer == "You agree to the Terms of Service and Privacy Policy."
+    assert result.citations == [Citation(id="terms_of_service", kind="policy")]
+
+
 def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question_against_the_real_embedder():
     embedder = LocalEmbedder()
     store = _seeded_store(embedder)
