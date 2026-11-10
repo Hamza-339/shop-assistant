@@ -6,6 +6,7 @@ class Product:
     id: str
     title: str
     description: str
+    handle: str = ""
     price: str = ""
     variants: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)

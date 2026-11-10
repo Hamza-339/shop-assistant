@@ -13,6 +13,7 @@ query {
     edges {
       node {
         id
+        handle
         title
         description
         tags
@@ -70,6 +71,7 @@ class ShopifyAdminClient:
             products.append(
                 Product(
                     id=node["id"],
+                    handle=node["handle"],
                     title=node["title"],
                     description=node["description"],
                     price=f"{min_price['amount']} {min_price['currencyCode']}",
