@@ -10,10 +10,21 @@ SHOPIFY_API_VERSION = "2024-10"
 _PRODUCTS_QUERY = """
 query {
   products(first: 250) {
-    edges { node { id title description } }
+    edges {
+      node {
+        id
+        title
+        description
+        tags
+        priceRangeV2 { minVariantPrice { amount currencyCode } }
+        variants(first: 100) { edges { node { title } } }
+      }
+    }
   }
 }
 """
+
+_DEFAULT_VARIANT_TITLE = "Default Title"
 
 _POLICIES_QUERY = """
 query {
@@ -51,10 +62,22 @@ class ShopifyAdminClient:
 
     def get_products(self) -> list[Product]:
         data = self._query(_PRODUCTS_QUERY)
-        return [
-            Product(id=edge["node"]["id"], title=edge["node"]["title"], description=edge["node"]["description"])
-            for edge in data["products"]["edges"]
-        ]
+        products = []
+        for edge in data["products"]["edges"]:
+            node = edge["node"]
+            min_price = node["priceRangeV2"]["minVariantPrice"]
+            variant_titles = [v["node"]["title"] for v in node["variants"]["edges"]]
+            products.append(
+                Product(
+                    id=node["id"],
+                    title=node["title"],
+                    description=node["description"],
+                    price=f"{min_price['amount']} {min_price['currencyCode']}",
+                    variants=[title for title in variant_titles if title != _DEFAULT_VARIANT_TITLE],
+                    tags=list(node["tags"]),
+                )
+            )
+        return products
 
     def get_policies(self) -> list[Policy]:
         data = self._query(_POLICIES_QUERY)
