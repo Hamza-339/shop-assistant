@@ -1,6 +1,7 @@
 export interface Citation {
   id: string;
   kind: string;
+  handle: string;
 }
 
 export interface ApiResponse {
@@ -26,4 +27,8 @@ export function toRenderedMessage(response: ApiResponse): RenderedMessage {
 export function formatCitation(citation: Citation): string {
   const kindLabel = citation.kind.charAt(0).toUpperCase() + citation.kind.slice(1);
   return `${kindLabel} · ${citation.id}`;
+}
+
+export function citationUrl(citation: Citation): string {
+  return citation.kind === "policy" ? `/policies/${citation.handle}` : `/products/${citation.handle}`;
 }
