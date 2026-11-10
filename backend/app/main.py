@@ -98,6 +98,6 @@ def api_answer(
     result = answer_question(payload.question, store, embedder, claude_client)
     return {
         "answer": result.answer,
-        "citations": [{"id": c.id, "kind": c.kind} for c in result.citations],
+        "citations": [{"id": c.id, "kind": c.kind, "handle": c.handle} for c in result.citations],
         "deflected": result.deflected,
     }
