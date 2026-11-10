@@ -1,6 +1,5 @@
 from app.embeddings import LocalEmbedder
-from app.fake_shopify_client import FakeShopifyClient
-from app.shopify_client import ShopifyClient
+from app.shopify_client import ShopifyClient, shopify_client_from_env
 from app.store import StoreEntry, VectorStore
 
 
@@ -17,6 +16,8 @@ def run_sync(client: ShopifyClient, store: VectorStore, embedder: LocalEmbedder)
 
 if __name__ == "__main__":
     # Manual trigger: `python -m app.sync`. A scheduler calls the same
-    # run_sync() entry point; FakeShopifyClient is swapped for the real
-    # token-based client once it exists.
-    run_sync(FakeShopifyClient(), VectorStore(), LocalEmbedder())
+    # run_sync() entry point.
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    run_sync(shopify_client_from_env(), VectorStore(), LocalEmbedder())
