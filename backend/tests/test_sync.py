@@ -27,6 +27,31 @@ def test_run_sync_embeds_every_product_from_the_client():
     assert product_ids == {product.id for product in client.get_products()}
 
 
+def test_run_sync_carries_the_product_handle_onto_its_store_entry():
+    product = Product(
+        id="gid://shopify/Product/1",
+        handle="classic-cotton-t-shirt",
+        title="Classic Cotton T-Shirt",
+        description="A tee.",
+    )
+    store = VectorStore()
+
+    run_sync(StubShopifyClient([product], []), store, LocalEmbedder())
+
+    [entry] = store.entries
+    assert entry.handle == "classic-cotton-t-shirt"
+
+
+def test_run_sync_carries_the_policy_type_as_the_handle_onto_its_store_entry():
+    client = FakeShopifyClient()
+    store = VectorStore()
+
+    run_sync(client, store, LocalEmbedder())
+
+    policy_entries = [entry for entry in store.entries if entry.kind == "policy"]
+    assert {entry.handle for entry in policy_entries} == {entry.id for entry in policy_entries}
+
+
 def test_run_sync_embeds_all_four_shop_policies():
     client = FakeShopifyClient()
     store = VectorStore()
