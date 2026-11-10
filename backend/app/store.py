@@ -7,6 +7,7 @@ class StoreEntry:
     kind: str
     text: str
     embedding: list[float]
+    handle: str = ""
 
 
 class VectorStore:

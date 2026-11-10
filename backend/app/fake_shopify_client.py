@@ -3,16 +3,19 @@ from app.models import Policy, Product
 SAMPLE_PRODUCTS = [
     Product(
         id="gid://shopify/Product/1",
+        handle="classic-cotton-t-shirt",
         title="Classic Cotton T-Shirt",
         description="A breathable 100% cotton t-shirt available in sizes S-XL.",
     ),
     Product(
         id="gid://shopify/Product/2",
+        handle="insulated-water-bottle",
         title="Insulated Water Bottle",
         description="24oz stainless steel bottle that keeps drinks cold for 24 hours.",
     ),
     Product(
         id="gid://shopify/Product/3",
+        handle="canvas-tote-bag",
         title="Canvas Tote Bag",
         description="Durable canvas tote with reinforced handles, machine washable.",
     ),
