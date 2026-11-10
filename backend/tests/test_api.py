@@ -118,6 +118,13 @@ def test_api_rate_limits_after_20_requests_in_a_minute_from_one_ip(client):
     assert response.status_code == 429
 
 
+def test_main_wires_the_real_anthropic_claude_client_as_the_production_default():
+    from app.claude_client import AnthropicClaudeClient
+    from app.main import _claude_client
+
+    assert isinstance(_claude_client, AnthropicClaudeClient)
+
+
 def test_api_allows_requests_again_after_the_rate_limit_window_expires(client, monkeypatch):
     fake_now = [0.0]
     monkeypatch.setattr("app.main.time.monotonic", lambda: fake_now[0])
