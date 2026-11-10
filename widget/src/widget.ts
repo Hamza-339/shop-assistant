@@ -1,4 +1,4 @@
-import { ApiResponse, formatCitation, toRenderedMessage } from "./render.js";
+import { ApiResponse, Citation, citationUrl, formatCitation, toRenderedMessage } from "./render.js";
 
 const DEFAULT_API_BASE = "/api";
 
@@ -114,16 +114,21 @@ function injectStyles(): void {
   document.head.appendChild(style);
 }
 
-function appendMessage(history: HTMLElement, role: "user" | "assistant", text: string, citationLabels: string[]): void {
+function appendMessage(history: HTMLElement, role: "user" | "assistant", text: string, citations: Citation[]): void {
   const message = document.createElement("div");
   message.className = `sa-widget-message ${role}`;
   message.textContent = text;
 
-  for (const label of citationLabels) {
-    const citation = document.createElement("div");
-    citation.className = "sa-widget-citations";
-    citation.textContent = label;
-    message.appendChild(citation);
+  for (const citation of citations) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "sa-widget-citations";
+
+    const link = document.createElement("a");
+    link.href = citationUrl(citation);
+    link.textContent = formatCitation(citation);
+    wrapper.appendChild(link);
+
+    message.appendChild(wrapper);
   }
 
   history.appendChild(message);
@@ -201,7 +206,7 @@ export function mount(): void {
     askQuestion(apiBase, question)
       .then((response) => {
         const rendered = toRenderedMessage(response);
-        appendMessage(history, "assistant", rendered.text, rendered.citations.map(formatCitation));
+        appendMessage(history, "assistant", rendered.text, rendered.citations);
       })
       .catch(() => {
         appendMessage(history, "assistant", "Something went wrong. Please try again.", []);
