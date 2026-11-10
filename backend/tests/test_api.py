@@ -34,7 +34,15 @@ class FakeClaudeClient:
 def _seeded_store(embedder: FakeEmbedder) -> VectorStore:
     store = VectorStore()
     text = "Classic Cotton T-Shirt breathable cotton t-shirt sizes S-XL"
-    store.add(StoreEntry(id="gid://shopify/Product/1", kind="product", text=text, embedding=embedder.embed(text)))
+    store.add(
+        StoreEntry(
+            id="gid://shopify/Product/1",
+            kind="product",
+            handle="classic-cotton-t-shirt",
+            text=text,
+            embedding=embedder.embed(text),
+        )
+    )
     return store
 
 
@@ -61,7 +69,9 @@ def test_api_returns_answer_citations_and_deflected_fields(client):
     assert response.status_code == 200
     assert response.json() == {
         "answer": "It's a breathable cotton t-shirt.",
-        "citations": [{"id": "gid://shopify/Product/1", "kind": "product"}],
+        "citations": [
+            {"id": "gid://shopify/Product/1", "kind": "product", "handle": "classic-cotton-t-shirt"}
+        ],
         "deflected": False,
     }
 
