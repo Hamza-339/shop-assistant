@@ -22,6 +22,7 @@ class Policy:
 class Citation:
     id: str
     kind: str
+    handle: str = ""
 
 
 @dataclass(frozen=True)
