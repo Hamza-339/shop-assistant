@@ -49,13 +49,16 @@ def _seeded_store(embedder: FakeEmbedder) -> VectorStore:
         StoreEntry(
             id="gid://shopify/Product/1",
             kind="product",
+            handle="classic-cotton-t-shirt",
             text=product_text,
             embedding=embedder.embed(product_text),
         )
     )
     policy_text = "refund Items may be returned within 30 days of delivery for a full refund"
     store.add(
-        StoreEntry(id="refund", kind="policy", text=policy_text, embedding=embedder.embed(policy_text))
+        StoreEntry(
+            id="refund", kind="policy", handle="refund", text=policy_text, embedding=embedder.embed(policy_text)
+        )
     )
     return store
 
@@ -68,7 +71,9 @@ def test_answer_question_grounds_a_product_question_with_a_citation():
     result = answer_question("Tell me about the Classic Cotton T-Shirt", store, embedder, claude_client)
 
     assert result.answer == "It's a breathable cotton t-shirt."
-    assert result.citations == [Citation(id="gid://shopify/Product/1", kind="product")]
+    assert result.citations == [
+        Citation(id="gid://shopify/Product/1", kind="product", handle="classic-cotton-t-shirt")
+    ]
     assert result.deflected is False
 
 
@@ -80,7 +85,7 @@ def test_answer_question_grounds_a_policy_question_with_a_citation():
     result = answer_question("What is the refund policy?", store, embedder, claude_client)
 
     assert result.answer == "Refunds are accepted within 30 days."
-    assert result.citations == [Citation(id="refund", kind="policy")]
+    assert result.citations == [Citation(id="refund", kind="policy", handle="refund")]
     assert result.deflected is False
 
 
@@ -161,7 +166,7 @@ def test_answer_question_grounds_a_policy_question_that_mentions_a_deflected_key
     )
 
     assert result.answer == "Refunds are accepted within 30 days."
-    assert result.citations == [Citation(id="refund", kind="policy")]
+    assert result.citations == [Citation(id="refund", kind="policy", handle="refund")]
     assert result.deflected is False
 
 
@@ -173,7 +178,9 @@ def test_answer_question_retrieves_the_right_product_against_the_real_embedder()
     result = answer_question("Tell me about the Classic Cotton T-Shirt", store, embedder, claude_client)
 
     assert result.answer == "It's a breathable cotton t-shirt."
-    assert result.citations == [Citation(id="gid://shopify/Product/1", kind="product")]
+    assert result.citations == [
+        Citation(id="gid://shopify/Product/1", kind="product", handle="classic-cotton-t-shirt")
+    ]
     assert result.deflected is False
 
 
@@ -185,7 +192,7 @@ def test_answer_question_retrieves_the_right_policy_against_the_real_embedder():
     result = answer_question("What is the refund policy?", store, embedder, claude_client)
 
     assert result.answer == "Refunds are accepted within 30 days."
-    assert result.citations == [Citation(id="refund", kind="policy")]
+    assert result.citations == [Citation(id="refund", kind="policy", handle="refund")]
     assert result.deflected is False
 
 
@@ -198,13 +205,21 @@ def test_answer_question_grounds_a_weakly_scored_policy_question_against_the_rea
         "Terms of Service and the Privacy Policy. You represent that you are at least the age of majority "
         "in your state or province of residence to use the Services."
     )
-    store.add(StoreEntry(id="terms_of_service", kind="policy", text=terms_text, embedding=embedder.embed(terms_text)))
+    store.add(
+        StoreEntry(
+            id="terms_of_service",
+            kind="policy",
+            handle="terms_of_service",
+            text=terms_text,
+            embedding=embedder.embed(terms_text),
+        )
+    )
     claude_client = FakeClaudeClient(response="You agree to the Terms of Service and Privacy Policy.")
 
     result = answer_question("What am I agreeing to by using your site?", store, embedder, claude_client)
 
     assert result.answer == "You agree to the Terms of Service and Privacy Policy."
-    assert result.citations == [Citation(id="terms_of_service", kind="policy")]
+    assert result.citations == [Citation(id="terms_of_service", kind="policy", handle="terms_of_service")]
 
 
 def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question_against_the_real_embedder():
