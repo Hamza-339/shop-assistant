@@ -25,10 +25,22 @@ def run_sync(client: ShopifyClient, store: VectorStore, embedder: LocalEmbedder)
 
     for product in client.get_products():
         text = build_product_text(product)
-        store.add(StoreEntry(id=product.id, kind="product", text=text, embedding=embedder.embed(text)))
+        store.add(
+            StoreEntry(
+                id=product.id, kind="product", handle=product.handle, text=text, embedding=embedder.embed(text)
+            )
+        )
 
     for policy in client.get_policies():
-        store.add(StoreEntry(id=policy.type, kind="policy", text=policy.body, embedding=embedder.embed(policy.body)))
+        store.add(
+            StoreEntry(
+                id=policy.type,
+                kind="policy",
+                handle=policy.type,
+                text=policy.body,
+                embedding=embedder.embed(policy.body),
+            )
+        )
 
 
 if __name__ == "__main__":
