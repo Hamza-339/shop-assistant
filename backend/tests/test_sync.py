@@ -37,6 +37,26 @@ def test_run_sync_embeds_all_four_shop_policies():
     assert policy_types == {"refund", "privacy", "terms_of_service", "shipping"}
 
 
+def test_run_sync_embeds_price_variants_and_tags_alongside_title_and_description():
+    product = Product(
+        id="gid://shopify/Product/thin",
+        title="The Draft Snowboard",
+        description="",
+        price="629.95 USD",
+        variants=["Ice", "Electric Blue"],
+        tags=["snowboard", "winter"],
+    )
+    store = VectorStore()
+
+    run_sync(StubShopifyClient([product], []), store, LocalEmbedder())
+
+    [entry] = store.entries
+    assert "The Draft Snowboard" in entry.text
+    assert "629.95 USD" in entry.text
+    assert "Ice" in entry.text and "Electric Blue" in entry.text
+    assert "snowboard" in entry.text and "winter" in entry.text
+
+
 def test_run_sync_removes_products_no_longer_returned_by_the_client():
     store = VectorStore()
     stale_product = Product(id="gid://shopify/Product/old", title="Discontinued Mug", description="Gone.")
