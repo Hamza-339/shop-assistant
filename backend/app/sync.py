@@ -1,13 +1,30 @@
 from app.embeddings import LocalEmbedder
+from app.models import Product
 from app.shopify_client import ShopifyClient, shopify_client_from_env
 from app.store import StoreEntry, VectorStore
+
+
+def build_product_text(product: Product) -> str:
+    """Assembles the text a product is embedded and grounded on.
+
+    Includes price/variants/tags alongside title/description so a product
+    with no description still has enough to ground an answer on (#21).
+    """
+    lines = [product.title, product.description]
+    if product.price:
+        lines.append(f"Price: {product.price}")
+    if product.variants:
+        lines.append(f"Options: {', '.join(product.variants)}")
+    if product.tags:
+        lines.append(f"Tags: {', '.join(product.tags)}")
+    return "\n".join(lines)
 
 
 def run_sync(client: ShopifyClient, store: VectorStore, embedder: LocalEmbedder) -> None:
     store.wipe()
 
     for product in client.get_products():
-        text = f"{product.title}\n{product.description}"
+        text = build_product_text(product)
         store.add(StoreEntry(id=product.id, kind="product", text=text, embedding=embedder.embed(text)))
 
     for policy in client.get_policies():
