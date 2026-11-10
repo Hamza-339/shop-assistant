@@ -21,6 +21,7 @@ def test_get_products_maps_the_graphql_response_to_products():
                         {
                             "node": {
                                 "id": "gid://shopify/Product/1",
+                                "handle": "classic-cotton-t-shirt",
                                 "title": "Classic Cotton T-Shirt",
                                 "description": "A tee.",
                                 "tags": ["apparel", "cotton"],
@@ -39,6 +40,7 @@ def test_get_products_maps_the_graphql_response_to_products():
     assert products == [
         Product(
             id="gid://shopify/Product/1",
+            handle="classic-cotton-t-shirt",
             title="Classic Cotton T-Shirt",
             description="A tee.",
             price="19.99 USD",
@@ -57,6 +59,7 @@ def test_get_products_omits_the_default_title_variant_for_single_variant_product
                         {
                             "node": {
                                 "id": "gid://shopify/Product/2",
+                                "handle": "gift-card",
                                 "title": "Gift Card",
                                 "description": "",
                                 "tags": [],
