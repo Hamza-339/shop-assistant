@@ -1,5 +1,6 @@
 """The 30 hand-curated Eval Pairs (#8), fixed against a snapshot of the
-Shopify dev store's snowboard catalog and shop policies (fetched 2026-11-10).
+Shopify dev store's snowboard catalog and shop policies (fetched 2026-11-10,
+refreshed with price/variants/tags 2026-11-10 for #21).
 
 Grading is end-to-end against `answer_question`'s final answer, so a pair
 still passes even if `LocalEmbedder` retrieves a different entry than the
@@ -8,32 +9,132 @@ one the question names.
 
 from app.embeddings import LocalEmbedder
 from app.eval_runner import EvalPair
+from app.models import Product
 from app.store import StoreEntry, VectorStore
+from app.sync import build_product_text
 
-# --- Product catalog snapshot (title + description, as synced from Admin API) ---
+# --- Product catalog snapshot (title, description, price, variants, tags,
+# as synced from the Admin API) ---
 
-_PRODUCTS: list[tuple[str, str, str]] = [
-    ("gid://shopify/Product/15467938283603", "Gift Card", "This is a gift card for the store"),
-    ("gid://shopify/Product/15467938316371", "The Inventory Not Tracked Snowboard", ""),
-    ("gid://shopify/Product/15467938381907", "The Archived Snowboard", ""),
-    ("gid://shopify/Product/15467938414675", "The Hidden Snowboard", ""),
-    ("gid://shopify/Product/15467938447443", "The Collection Snowboard: Hydrogen", ""),
-    ("gid://shopify/Product/15467938480211", "The Minimal Snowboard", ""),
-    ("gid://shopify/Product/15467938512979", "The Compare at Price Snowboard", ""),
-    ("gid://shopify/Product/15467938545747", "Selling Plans Ski Wax", ""),
-    ("gid://shopify/Product/15467938578515", "The Draft Snowboard", ""),
-    (
-        "gid://shopify/Product/15467938611283",
-        "The Complete Snowboard",
-        "This PREMIUM snowboard is so SUPERDUPER awesome!",
+_PRODUCTS: list[Product] = [
+    Product(
+        id="gid://shopify/Product/15467938283603",
+        title="Gift Card",
+        description="This is a gift card for the store",
+        price="10.0 USD",
+        variants=["$10", "$25", "$50", "$100"],
     ),
-    ("gid://shopify/Product/15467938644051", "The Out of Stock Snowboard", ""),
-    ("gid://shopify/Product/15467938676819", "The Videographer Snowboard", ""),
-    ("gid://shopify/Product/15467938742355", "The Multi-location Snowboard", ""),
-    ("gid://shopify/Product/15467938775123", "The 3p Fulfilled Snowboard", ""),
-    ("gid://shopify/Product/15467938807891", "The Multi-managed Snowboard", ""),
-    ("gid://shopify/Product/15467938840659", "The Collection Snowboard: Oxygen", ""),
-    ("gid://shopify/Product/15467938938963", "The Collection Snowboard: Liquid", ""),
+    Product(
+        id="gid://shopify/Product/15467938316371",
+        title="The Inventory Not Tracked Snowboard",
+        description="",
+        price="949.95 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938381907",
+        title="The Archived Snowboard",
+        description="",
+        price="629.95 USD",
+        tags=["Archived", "Premium", "Snow", "Snowboard", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938414675",
+        title="The Hidden Snowboard",
+        description="",
+        price="749.95 USD",
+        tags=["Premium", "Snow", "Snowboard", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938447443",
+        title="The Collection Snowboard: Hydrogen",
+        description="",
+        price="600.0 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938480211",
+        title="The Minimal Snowboard",
+        description="",
+        price="885.95 USD",
+    ),
+    Product(
+        id="gid://shopify/Product/15467938512979",
+        title="The Compare at Price Snowboard",
+        description="",
+        price="785.95 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938545747",
+        title="Selling Plans Ski Wax",
+        description="",
+        price="9.95 USD",
+        variants=["Selling Plans Ski Wax", "Special Selling Plans Ski Wax", "Sample Selling Plans Ski Wax"],
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938578515",
+        title="The Draft Snowboard",
+        description="",
+        price="2629.95 USD",
+    ),
+    Product(
+        id="gid://shopify/Product/15467938611283",
+        title="The Complete Snowboard",
+        description="This PREMIUM snowboard is so SUPERDUPER awesome!",
+        price="699.95 USD",
+        variants=["Ice", "Dawn", "Powder", "Electric", "Sunset"],
+        tags=["Premium", "Snow", "Snowboard", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938644051",
+        title="The Out of Stock Snowboard",
+        description="",
+        price="885.95 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938676819",
+        title="The Videographer Snowboard",
+        description="",
+        price="885.95 USD",
+    ),
+    Product(
+        id="gid://shopify/Product/15467938742355",
+        title="The Multi-location Snowboard",
+        description="",
+        price="729.95 USD",
+        tags=["Premium", "Snow", "Snowboard", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938775123",
+        title="The 3p Fulfilled Snowboard",
+        description="",
+        price="2629.95 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938807891",
+        title="The Multi-managed Snowboard",
+        description="",
+        price="629.95 USD",
+        tags=["Premium", "Snow", "Snowboard", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938840659",
+        title="The Collection Snowboard: Oxygen",
+        description="",
+        price="1025.0 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
+    Product(
+        id="gid://shopify/Product/15467938938963",
+        title="The Collection Snowboard: Liquid",
+        description="",
+        price="749.95 USD",
+        tags=["Accessory", "Sport", "Winter"],
+    ),
 ]
 
 # --- Shop policy snapshot (plain-text distillation of the Admin API's shopPolicies) ---
@@ -77,9 +178,9 @@ _POLICIES: list[tuple[str, str]] = [
 def build_eval_store(embedder: LocalEmbedder) -> VectorStore:
     """Builds the VectorStore the 30 Eval Pairs below are written against."""
     store = VectorStore()
-    for product_id, title, description in _PRODUCTS:
-        text = f"{title}\n{description}"
-        store.add(StoreEntry(id=product_id, kind="product", text=text, embedding=embedder.embed(text)))
+    for product in _PRODUCTS:
+        text = build_product_text(product)
+        store.add(StoreEntry(id=product.id, kind="product", text=text, embedding=embedder.embed(text)))
     for policy_type, body in _POLICIES:
         store.add(StoreEntry(id=policy_type, kind="policy", text=body, embedding=embedder.embed(body)))
     return store
