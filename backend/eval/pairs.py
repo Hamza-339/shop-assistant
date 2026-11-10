@@ -1,8 +1,9 @@
 """The 30 hand-curated Eval Pairs (#8), fixed against a snapshot of the
 Shopify dev store's snowboard catalog and shop policies (fetched 2026-11-10).
 
-Each pair's question targets a `kind` below it is written against,
-independent of what `LocalEmbedder` retrieves for it at run time.
+Grading is end-to-end against `answer_question`'s final answer, so a pair
+still passes even if `LocalEmbedder` retrieves a different entry than the
+one the question names.
 """
 
 from app.embeddings import LocalEmbedder

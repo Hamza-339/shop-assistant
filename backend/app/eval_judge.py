@@ -51,7 +51,7 @@ class AnthropicJudgeClient:
         return JudgeVerdict(passed=text.strip().upper().startswith("PASS"), reasoning=text)
 
 
-def judge_client_from_env() -> AnthropicJudgeClient:
+def judge_client_from_env() -> JudgeClient:
     """Builds the AnthropicJudgeClient, always on JUDGE_MODEL (Haiku) regardless of LLM_MODEL."""
     api_key = os.environ["ANTHROPIC_API_KEY"]
     return AnthropicJudgeClient(anthropic.Anthropic(api_key=api_key), JUDGE_MODEL)
