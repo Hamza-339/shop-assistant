@@ -23,6 +23,9 @@ def test_get_products_maps_the_graphql_response_to_products():
                                 "id": "gid://shopify/Product/1",
                                 "title": "Classic Cotton T-Shirt",
                                 "description": "A tee.",
+                                "tags": ["apparel", "cotton"],
+                                "priceRangeV2": {"minVariantPrice": {"amount": "19.99", "currencyCode": "USD"}},
+                                "variants": {"edges": [{"node": {"title": "Small"}}, {"node": {"title": "Large"}}]},
                             }
                         }
                     ]
@@ -33,7 +36,43 @@ def test_get_products_maps_the_graphql_response_to_products():
 
     products = client.get_products()
 
-    assert products == [Product(id="gid://shopify/Product/1", title="Classic Cotton T-Shirt", description="A tee.")]
+    assert products == [
+        Product(
+            id="gid://shopify/Product/1",
+            title="Classic Cotton T-Shirt",
+            description="A tee.",
+            price="19.99 USD",
+            variants=["Small", "Large"],
+            tags=["apparel", "cotton"],
+        )
+    ]
+
+
+def test_get_products_omits_the_default_title_variant_for_single_variant_products():
+    client = _client_with_response(
+        {
+            "data": {
+                "products": {
+                    "edges": [
+                        {
+                            "node": {
+                                "id": "gid://shopify/Product/2",
+                                "title": "Gift Card",
+                                "description": "",
+                                "tags": [],
+                                "priceRangeV2": {"minVariantPrice": {"amount": "25.00", "currencyCode": "USD"}},
+                                "variants": {"edges": [{"node": {"title": "Default Title"}}]},
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    )
+
+    products = client.get_products()
+
+    assert products[0].variants == []
 
 
 def test_get_policies_maps_known_policy_types_and_skips_unrecognized_ones():
