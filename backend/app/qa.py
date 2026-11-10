@@ -8,6 +8,11 @@ from app.store import StoreEntry, VectorStore
 NO_GROUNDED_ANSWER = "I don't have information to answer that."
 DEFLECTION_MESSAGE = "I'm not able to help with that here, but our support team can."
 
+# Policies are a small, closed set (refund/privacy/shipping/terms), so a weaker
+# cosine score is still trustworthy evidence of the right match - unlike
+# products, where a weak score more often means no real match exists (#21).
+POLICY_MATCH_THRESHOLD = 0.2
+
 DEFLECTED_KEYWORDS = {"order", "payment", "stock", "inventory", "discount", "coupon", "promo"}
 GROUNDED_OVERRIDE_KEYWORDS = {"policy"}
 
@@ -50,7 +55,11 @@ def answer_question(
             best_score = score
             best_entry = entry
 
-    if best_entry is None or best_score < embedder.match_threshold:
+    if best_entry is None:
+        return AnswerResult(answer=NO_GROUNDED_ANSWER, citations=[])
+
+    threshold = POLICY_MATCH_THRESHOLD if best_entry.kind == "policy" else embedder.match_threshold
+    if best_score < threshold:
         return AnswerResult(answer=NO_GROUNDED_ANSWER, citations=[])
 
     answer = claude_client.generate_answer(question, [best_entry])
