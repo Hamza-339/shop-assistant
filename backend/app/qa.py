@@ -63,4 +63,5 @@ def answer_question(
         return AnswerResult(answer=NO_GROUNDED_ANSWER, citations=[])
 
     answer = claude_client.generate_answer(question, [best_entry])
-    return AnswerResult(answer=answer, citations=[Citation(id=best_entry.id, kind=best_entry.kind)])
+    citation = Citation(id=best_entry.id, kind=best_entry.kind, handle=best_entry.handle)
+    return AnswerResult(answer=answer, citations=[citation])
