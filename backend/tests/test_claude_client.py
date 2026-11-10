@@ -41,6 +41,20 @@ def test_generate_answer_returns_the_model_reply_text():
     assert answer == "A breathable cotton t-shirt."
 
 
+def test_generate_answer_instructs_the_model_to_confirm_from_whatever_fields_are_present():
+    stub = _StubAnthropic("irrelevant")
+    client = AnthropicClaudeClient(stub, model="claude-haiku-4-5-20251001")
+
+    client.generate_answer(
+        "Is the Draft Snowboard available?",
+        [StoreEntry(id="gid://shopify/Product/1", kind="product", text="The Draft Snowboard", embedding=[])],
+    )
+
+    prompt = stub.messages.calls[0]["messages"][0]["content"]
+    assert "authoritative" in prompt.lower()
+    assert "do not" in prompt.lower() or "don't" in prompt.lower()
+
+
 def test_generate_answer_sends_the_configured_model_name():
     stub = _StubAnthropic("irrelevant")
     client = AnthropicClaudeClient(stub, model="claude-haiku-4-5-20251001")
