@@ -1,16 +1,10 @@
 import json
 import math
-import os
 
 import httpx
-import pytest
 
 from app.embeddings import VoyageEmbedder, embedder_from_env
-
-_REQUIRES_VOYAGE_KEY = pytest.mark.skipif(
-    not os.environ.get("VOYAGE_API_KEY"),
-    reason="needs a real VOYAGE_API_KEY to call the live Voyage API",
-)
+from tests.conftest import requires_voyage_key
 
 
 def _cosine_similarity(a: list[float], b: list[float]) -> float:
@@ -51,7 +45,7 @@ def test_embedder_from_env_builds_a_voyage_embedder(monkeypatch):
     assert isinstance(embedder, VoyageEmbedder)
 
 
-@_REQUIRES_VOYAGE_KEY
+@requires_voyage_key
 def test_embed_scores_shared_meaning_higher_than_unrelated_text():
     embedder = embedder_from_env()
 
@@ -66,7 +60,7 @@ def test_embed_scores_shared_meaning_higher_than_unrelated_text():
     assert matching_score - unrelated_score > 0.2
 
 
-@_REQUIRES_VOYAGE_KEY
+@requires_voyage_key
 def test_embed_scores_shared_meaning_higher_than_unrelated_text_for_a_policy_question():
     embedder = embedder_from_env()
 

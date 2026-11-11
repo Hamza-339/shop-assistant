@@ -1,7 +1,7 @@
 import math
 
 from app.claude_client import ClaudeClient
-from app.embeddings import LocalEmbedder
+from app.embeddings import Embedder
 from app.models import AnswerResult, Citation
 from app.store import StoreEntry, VectorStore
 
@@ -39,7 +39,7 @@ def _cosine_similarity(a: list[float], b: list[float]) -> float:
 
 
 def answer_question(
-    question: str, store: VectorStore, embedder: LocalEmbedder, claude_client: ClaudeClient
+    question: str, store: VectorStore, embedder: Embedder, claude_client: ClaudeClient
 ) -> AnswerResult:
     if _is_deflected_topic(question):
         return AnswerResult(answer=DEFLECTION_MESSAGE, citations=[], deflected=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app.claude_client import ClaudeClient
-from app.embeddings import LocalEmbedder
+from app.embeddings import Embedder
 from app.eval_judge import JudgeClient
 from app.qa import answer_question
 from app.store import VectorStore
@@ -28,7 +28,7 @@ class EvalResult:
 def run_eval(
     pairs: list[EvalPair],
     store: VectorStore,
-    embedder: LocalEmbedder,
+    embedder: Embedder,
     claude_client: ClaudeClient,
     judge_client: JudgeClient,
 ) -> list[EvalResult]:

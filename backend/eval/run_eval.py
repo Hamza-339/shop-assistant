@@ -10,7 +10,7 @@ import sys
 from dotenv import load_dotenv
 
 from app.claude_client import claude_client_from_env
-from app.embeddings import LocalEmbedder
+from app.embeddings import embedder_from_env
 from app.eval_judge import judge_client_from_env
 from app.eval_runner import run_eval
 from eval.pairs import EVAL_PAIRS, build_eval_store
@@ -19,7 +19,7 @@ from eval.pairs import EVAL_PAIRS, build_eval_store
 def main() -> int:
     load_dotenv()
 
-    embedder = LocalEmbedder()
+    embedder = embedder_from_env()
     store = build_eval_store(embedder)
     claude_client = claude_client_from_env()
     judge_client = judge_client_from_env()

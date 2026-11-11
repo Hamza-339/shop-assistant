@@ -1,28 +1,49 @@
-from sentence_transformers import SentenceTransformer
+import os
+from typing import Protocol
 
-_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+import httpx
+
+DEFAULT_VOYAGE_MODEL = "voyage-4-lite"
 
 
-class LocalEmbedder:
-    """Small CPU-capable model running in-process (per ADR-0003).
+class Embedder(Protocol):
+    """Embeds text into a vector for cosine-similarity retrieval."""
 
-    No external call is made at embed time; model weights are downloaded
-    once on first use and cached on disk, a one-time deviation from
-    ADR-0003's "no external dependency" framing that the ADR anticipated
-    ("swapping in a higher-quality local model later is a drop-in
-    replacement"). Each instantiation still loads those cached weights into
-    memory, so construct one LocalEmbedder and reuse it rather than
-    constructing it per call. Swapping in a different local model later is a
-    drop-in replacement since sync is always a full re-embed (per ADR-0002).
+    dimensions: int
+    match_threshold: float
+
+    def embed(self, text: str) -> list[float]: ...
+
+
+class VoyageEmbedder:
+    """Embedder backed by Voyage AI's hosted embeddings API (ADR-0005).
+
+    Voyage was picked for its documented free tier (200M tokens/account,
+    no monthly call cap), since Vercel's 500MB Python function bundle
+    limit rules out shipping the in-process model ADR-0003 used.
     """
 
-    dimensions = 384
-    # Picked from real cosine scores: unrelated text scores up to ~0.39,
-    # genuine matches score 0.58+ (per #12).
+    dimensions = 1024
+    # Carried over from the local MiniLM model (#12); Voyage's score
+    # distribution hasn't been validated against it yet, so this needs
+    # re-tuning once eval can run against the real API.
     match_threshold = 0.45
 
-    def __init__(self) -> None:
-        self._model = SentenceTransformer(_MODEL_NAME)
+    def __init__(self, client: httpx.Client, model: str) -> None:
+        self._client = client
+        self.model = model
 
     def embed(self, text: str) -> list[float]:
-        return self._model.encode(text).tolist()
+        response = self._client.post("/embeddings", json={"model": self.model, "input": [text]})
+        response.raise_for_status()
+        return response.json()["data"][0]["embedding"]
+
+
+def embedder_from_env() -> Embedder:
+    """Builds a VoyageEmbedder from VOYAGE_API_KEY."""
+    api_key = os.environ["VOYAGE_API_KEY"]
+    client = httpx.Client(
+        base_url="https://api.voyageai.com/v1",
+        headers={"Authorization": f"Bearer {api_key}"},
+    )
+    return VoyageEmbedder(client, model=DEFAULT_VOYAGE_MODEL)

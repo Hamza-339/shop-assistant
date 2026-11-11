@@ -11,7 +11,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.claude_client import ClaudeClient, claude_client_from_env
 from app.db import engine_from_env, load_entries
-from app.embeddings import LocalEmbedder
+from app.embeddings import Embedder, embedder_from_env
 from app.qa import answer_question
 from app.store import VectorStore
 
@@ -67,7 +67,7 @@ app.add_middleware(
 )
 
 _store = VectorStore()
-_embedder = LocalEmbedder()
+_embedder: Embedder = embedder_from_env()
 _claude_client: ClaudeClient = claude_client_from_env()
 
 if DATABASE_URL:
@@ -83,7 +83,7 @@ def get_store() -> VectorStore:
     return _store
 
 
-def get_embedder() -> LocalEmbedder:
+def get_embedder() -> Embedder:
     return _embedder
 
 
@@ -99,7 +99,7 @@ class QuestionRequest(BaseModel):
 def api_answer(
     payload: QuestionRequest,
     store: VectorStore = Depends(get_store),
-    embedder: LocalEmbedder = Depends(get_embedder),
+    embedder: Embedder = Depends(get_embedder),
     claude_client: ClaudeClient = Depends(get_claude_client),
 ) -> dict:
     result = answer_question(payload.question, store, embedder, claude_client)
