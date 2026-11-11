@@ -3,11 +3,11 @@ Shopify dev store's snowboard catalog and shop policies (fetched 2026-11-10,
 refreshed with price/variants/tags 2026-11-10 for #21).
 
 Grading is end-to-end against `answer_question`'s final answer, so a pair
-still passes even if `LocalEmbedder` retrieves a different entry than the
+still passes even if the embedder retrieves a different entry than the
 one the question names.
 """
 
-from app.embeddings import LocalEmbedder
+from app.embeddings import Embedder
 from app.eval_runner import EvalPair
 from app.models import Product
 from app.store import StoreEntry, VectorStore
@@ -175,7 +175,7 @@ _POLICIES: list[tuple[str, str]] = [
 ]
 
 
-def build_eval_store(embedder: LocalEmbedder) -> VectorStore:
+def build_eval_store(embedder: Embedder) -> VectorStore:
     """Builds the VectorStore the 30 Eval Pairs below are written against."""
     store = VectorStore()
     for product in _PRODUCTS:

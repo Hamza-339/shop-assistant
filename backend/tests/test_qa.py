@@ -1,10 +1,10 @@
 import hashlib
 
-from app.embeddings import LocalEmbedder
+from app.embeddings import embedder_from_env
 from app.models import Citation
 from app.qa import DEFLECTION_MESSAGE, NO_GROUNDED_ANSWER, answer_question
 from app.store import StoreEntry, VectorStore
-
+from tests.conftest import requires_voyage_key
 
 STOPWORDS = {
     "a", "an", "the", "is", "are", "do", "you", "your", "what", "how", "many",
@@ -15,8 +15,8 @@ STOPWORDS = {
 
 class FakeEmbedder:
     """Bag-of-words hashed embedder: shared meaningful words score similar.
-    Used in place of the production LocalEmbedder so most retrieval tests
-    don't pay the cost of loading a real model."""
+    Used in place of the production VoyageEmbedder so most retrieval tests
+    don't need a real API key or network call."""
 
     dimensions = 64
     match_threshold = 0.3
@@ -170,8 +170,9 @@ def test_answer_question_grounds_a_policy_question_that_mentions_a_deflected_key
     assert result.deflected is False
 
 
+@requires_voyage_key
 def test_answer_question_retrieves_the_right_product_against_the_real_embedder():
-    embedder = LocalEmbedder()
+    embedder = embedder_from_env()
     store = _seeded_store(embedder)
     claude_client = FakeClaudeClient(response="It's a breathable cotton t-shirt.")
 
@@ -184,8 +185,9 @@ def test_answer_question_retrieves_the_right_product_against_the_real_embedder()
     assert result.deflected is False
 
 
+@requires_voyage_key
 def test_answer_question_retrieves_the_right_policy_against_the_real_embedder():
-    embedder = LocalEmbedder()
+    embedder = embedder_from_env()
     store = _seeded_store(embedder)
     claude_client = FakeClaudeClient(response="Refunds are accepted within 30 days.")
 
@@ -196,8 +198,9 @@ def test_answer_question_retrieves_the_right_policy_against_the_real_embedder():
     assert result.deflected is False
 
 
+@requires_voyage_key
 def test_answer_question_grounds_a_weakly_scored_policy_question_against_the_real_embedder():
-    embedder = LocalEmbedder()
+    embedder = embedder_from_env()
     store = VectorStore()
     terms_text = (
         "terms_of_service\nshop-assistant-demo operates this store, powered by Shopify, to provide the "
@@ -222,8 +225,9 @@ def test_answer_question_grounds_a_weakly_scored_policy_question_against_the_rea
     assert result.citations == [Citation(id="terms_of_service", kind="policy", handle="terms_of_service")]
 
 
+@requires_voyage_key
 def test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question_against_the_real_embedder():
-    embedder = LocalEmbedder()
+    embedder = embedder_from_env()
     store = _seeded_store(embedder)
     claude_client = FakeClaudeClient(response="should never be returned")
 

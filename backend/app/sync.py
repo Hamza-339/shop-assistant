@@ -1,4 +1,4 @@
-from app.embeddings import LocalEmbedder
+from app.embeddings import Embedder, embedder_from_env
 from app.models import Product
 from app.shopify_client import ShopifyClient, shopify_client_from_env
 from app.store import StoreEntry, VectorStore
@@ -20,7 +20,7 @@ def build_product_text(product: Product) -> str:
     return "\n".join(lines)
 
 
-def run_sync(client: ShopifyClient, store: VectorStore, embedder: LocalEmbedder) -> None:
+def run_sync(client: ShopifyClient, store: VectorStore, embedder: Embedder) -> None:
     store.wipe()
 
     for product in client.get_products():
@@ -53,5 +53,5 @@ if __name__ == "__main__":
 
     load_dotenv()
     store = VectorStore()
-    run_sync(shopify_client_from_env(), store, LocalEmbedder())
+    run_sync(shopify_client_from_env(), store, embedder_from_env())
     save_entries(engine_from_env(), store.entries)
