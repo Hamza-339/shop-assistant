@@ -6,12 +6,11 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.claude_client import ClaudeClient, claude_client_from_env
-from app.db import load_entries
+from app.db import engine_from_env, load_entries
 from app.embeddings import LocalEmbedder
 from app.qa import answer_question
 from app.store import VectorStore
@@ -74,8 +73,10 @@ _claude_client: ClaudeClient = claude_client_from_env()
 if DATABASE_URL:
     # The API never talks to Shopify or runs sync itself (#9); `python -m
     # app.sync` is the only writer, run manually or on a schedule (ADR-0002).
-    for entry in load_entries(create_engine(DATABASE_URL)):
+    _engine = engine_from_env()
+    for entry in load_entries(_engine):
         _store.add(entry)
+    _engine.dispose()
 
 
 def get_store() -> VectorStore:
