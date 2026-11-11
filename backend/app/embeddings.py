@@ -34,10 +34,13 @@ class VoyageEmbedder:
     """
 
     dimensions = 1024
-    # Carried over from the local MiniLM model (#12); Voyage's score
-    # distribution hasn't been validated against it yet, so this needs
-    # re-tuning once eval can run against the real API.
-    match_threshold = 0.45
+    # Voyage's cosine scores run higher than the old local MiniLM model's
+    # (#12's 0.45 let an unrelated "size guide" question match a product at
+    # 0.56 - a real false-positive caught by
+    # test_answer_question_does_not_fabricate_an_answer_for_a_page_shaped_question_against_the_real_embedder).
+    # Measured against the real API: genuine matches score ~0.71, that
+    # mismatch scored ~0.56, so 0.65 sits safely between them.
+    match_threshold = 0.65
 
     def __init__(
         self,
