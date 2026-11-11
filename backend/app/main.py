@@ -6,15 +6,15 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from sqlalchemy import create_engine
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.claude_client import ClaudeClient, claude_client_from_env
+from app.db import load_entries
 from app.embeddings import LocalEmbedder
-from app.fake_shopify_client import FakeShopifyClient
 from app.qa import answer_question
 from app.store import VectorStore
-from app.sync import run_sync
 
 load_dotenv()
 
@@ -22,6 +22,7 @@ RATE_LIMIT_PER_MINUTE = 20
 RATE_LIMIT_WINDOW_SECONDS = 60.0
 
 STOREFRONT_ORIGIN = os.environ.get("STOREFRONT_ORIGIN", "https://storefront.example.com")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 _RATE_LIMIT_HITS: dict[str, list[float]] = defaultdict(list)
 
@@ -69,7 +70,12 @@ app.add_middleware(
 _store = VectorStore()
 _embedder = LocalEmbedder()
 _claude_client: ClaudeClient = claude_client_from_env()
-run_sync(FakeShopifyClient(), _store, _embedder)
+
+if DATABASE_URL:
+    # The API never talks to Shopify or runs sync itself (#9); `python -m
+    # app.sync` is the only writer, run manually or on a schedule (ADR-0002).
+    for entry in load_entries(create_engine(DATABASE_URL)):
+        _store.add(entry)
 
 
 def get_store() -> VectorStore:

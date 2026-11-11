@@ -45,8 +45,16 @@ def run_sync(client: ShopifyClient, store: VectorStore, embedder: LocalEmbedder)
 
 if __name__ == "__main__":
     # Manual trigger: `python -m app.sync`. A scheduler calls the same
-    # run_sync() entry point.
+    # run_sync() entry point. Persists to Neon so the API service (which
+    # never calls Shopify itself, per #9) can read the synced data on boot.
+    import os
+
     from dotenv import load_dotenv
+    from sqlalchemy import create_engine
+
+    from app.db import save_entries
 
     load_dotenv()
-    run_sync(shopify_client_from_env(), VectorStore(), LocalEmbedder())
+    store = VectorStore()
+    run_sync(shopify_client_from_env(), store, LocalEmbedder())
+    save_entries(create_engine(os.environ["DATABASE_URL"]), store.entries)
