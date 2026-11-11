@@ -1,6 +1,7 @@
 import json
+import os
 
-from sqlalchemy import Column, MetaData, String, Table, Text, delete, insert, select
+from sqlalchemy import Column, MetaData, String, Table, Text, create_engine, delete, insert, select
 from sqlalchemy.engine import Engine
 
 from app.store import StoreEntry
@@ -18,8 +19,17 @@ store_entries = Table(
 )
 
 
-def save_entries(engine: Engine, entries: list[StoreEntry]) -> None:
+def engine_from_env() -> Engine:
+    """Builds the Neon/Postgres engine from DATABASE_URL."""
+    return create_engine(os.environ["DATABASE_URL"])
+
+
+def _ensure_schema(engine: Engine) -> None:
     metadata.create_all(engine)
+
+
+def save_entries(engine: Engine, entries: list[StoreEntry]) -> None:
+    _ensure_schema(engine)
 
     with engine.begin() as conn:
         conn.execute(delete(store_entries))
@@ -40,7 +50,7 @@ def save_entries(engine: Engine, entries: list[StoreEntry]) -> None:
 
 
 def load_entries(engine: Engine) -> list[StoreEntry]:
-    metadata.create_all(engine)
+    _ensure_schema(engine)
 
     with engine.connect() as conn:
         rows = conn.execute(select(store_entries)).all()
