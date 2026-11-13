@@ -23,9 +23,9 @@ export const RATE_LIMIT_MESSAGE = "We're a little busy right now — please try 
 export const WELCOME_MESSAGE = "Hi! I'm your AI shopping assistant. Ask me about our products or policies.";
 
 export const SUGGESTION_CHIPS = [
-  "What sizes does the Classic Cotton T-Shirt come in?",
   "What's your return policy?",
   "How long does shipping take?",
+  "How can I contact support?",
 ] as const;
 
 export interface AskFailure {
