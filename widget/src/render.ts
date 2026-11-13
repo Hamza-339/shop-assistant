@@ -28,6 +28,23 @@ export const SUGGESTION_CHIPS = [
   "How can I contact support?",
 ] as const;
 
+export function parseChips(raw: string | null | undefined): readonly string[] {
+  if (!raw) {
+    return SUGGESTION_CHIPS;
+  }
+
+  const chips = raw
+    .split("|")
+    .map((chip) => chip.trim())
+    .filter((chip) => chip.length > 0);
+
+  if (chips.length === 0) {
+    return SUGGESTION_CHIPS;
+  }
+
+  return chips.slice(0, 3);
+}
+
 export interface AskFailure {
   status?: number;
   error?: unknown;
