@@ -4,8 +4,8 @@ import {
   citationUrl,
   formatCitation,
   mapErrorToMessage,
+  parseChips,
   renderMarkdown,
-  SUGGESTION_CHIPS,
   toRenderedMessage,
   WELCOME_MESSAGE,
 } from "./render.js";
@@ -23,6 +23,12 @@ function getBrandColor(): string {
   const script = document.currentScript;
   const configured = script instanceof HTMLElement ? script.dataset.color : null;
   return configured ?? DEFAULT_COLOR;
+}
+
+function getChips(): readonly string[] {
+  const script = document.currentScript;
+  const configured = script instanceof HTMLElement ? script.dataset.chips : null;
+  return parseChips(configured);
 }
 
 function injectStyles(): void {
@@ -256,13 +262,17 @@ function appendUserMessage(history: HTMLElement, text: string): void {
   history.scrollTop = history.scrollHeight;
 }
 
-function appendWelcome(history: HTMLElement, onChipClick: (question: string) => void): void {
+function appendWelcome(
+  history: HTMLElement,
+  chipQuestions: readonly string[],
+  onChipClick: (question: string) => void,
+): void {
   appendAssistantMessage(history, WELCOME_MESSAGE, []);
 
   const chips = document.createElement("div");
   chips.className = "sa-widget-chips";
 
-  for (const question of SUGGESTION_CHIPS) {
+  for (const question of chipQuestions) {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "sa-widget-chip";
@@ -289,6 +299,7 @@ async function askQuestion(apiBase: string, question: string): Promise<ApiRespon
 export function mount(): void {
   const apiBase = getApiBase();
   const brandColor = getBrandColor();
+  const chipQuestions = getChips();
   injectStyles();
 
   const root = document.createElement("div");
@@ -361,7 +372,7 @@ export function mount(): void {
     if (panel.hidden) {
       panel.hidden = false;
       if (history.childElementCount === 0) {
-        appendWelcome(history, submitQuestion);
+        appendWelcome(history, chipQuestions, submitQuestion);
       }
     }
   }
