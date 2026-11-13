@@ -6,6 +6,7 @@ import {
   formatCitation,
   GENERIC_ERROR_MESSAGE,
   mapErrorToMessage,
+  parseChips,
   RATE_LIMIT_MESSAGE,
   renderMarkdown,
   SUGGESTION_CHIPS,
@@ -138,6 +139,31 @@ describe("WELCOME_MESSAGE and SUGGESTION_CHIPS", () => {
 
   it("exports exactly three suggestion chip labels", () => {
     expect(SUGGESTION_CHIPS).toHaveLength(3);
+  });
+});
+
+describe("parseChips", () => {
+  it("falls back to the default chips when given undefined", () => {
+    expect(parseChips(undefined)).toEqual(SUGGESTION_CHIPS);
+  });
+
+  it("falls back to the default chips when given an empty string", () => {
+    expect(parseChips("")).toEqual(SUGGESTION_CHIPS);
+  });
+
+  it("falls back to the default chips when given only whitespace and separators", () => {
+    expect(parseChips("  | | ")).toEqual(SUGGESTION_CHIPS);
+  });
+
+  it("splits on pipes and trims whitespace from each question", () => {
+    expect(parseChips(" Do you ship internationally? | What's your return policy? ")).toEqual([
+      "Do you ship internationally?",
+      "What's your return policy?",
+    ]);
+  });
+
+  it("caps the result at a maximum of three chips", () => {
+    expect(parseChips("One?|Two?|Three?|Four?")).toEqual(["One?", "Two?", "Three?"]);
   });
 });
 
