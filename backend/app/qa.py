@@ -5,7 +5,10 @@ from app.embeddings import Embedder
 from app.models import AnswerResult, Citation
 from app.store import StoreEntry, VectorStore
 
-NO_GROUNDED_ANSWER = "I don't have information to answer that."
+NO_GROUNDED_ANSWER = (
+    "I couldn't find that in our store information. You can ask me about our return or "
+    "shipping policy, or contact our support team."
+)
 DEFLECTION_MESSAGE = "I'm not able to help with that here, but our support team can."
 
 # Policies are a small, closed set (refund/privacy/shipping/terms), so a weaker
