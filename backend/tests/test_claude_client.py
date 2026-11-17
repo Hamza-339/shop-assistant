@@ -55,6 +55,28 @@ def test_generate_answer_instructs_the_model_to_confirm_from_whatever_fields_are
     assert "do not" in prompt.lower() or "don't" in prompt.lower()
 
 
+def test_generate_answer_instructs_the_model_to_keep_answers_short():
+    stub = _StubAnthropic("irrelevant")
+    client = AnthropicClaudeClient(stub, model="claude-haiku-4-5-20251001")
+
+    client.generate_answer(
+        "Is the Draft Snowboard available?",
+        [StoreEntry(id="gid://shopify/Product/1", kind="product", text="The Draft Snowboard", embedding=[])],
+    )
+
+    prompt = stub.messages.calls[0]["messages"][0]["content"]
+    assert "2-3 sentence" in prompt or "2-3 sentences" in prompt
+
+
+def test_generate_answer_caps_max_tokens_to_a_small_value():
+    stub = _StubAnthropic("irrelevant")
+    client = AnthropicClaudeClient(stub, model="claude-haiku-4-5-20251001")
+
+    client.generate_answer("Question?", [])
+
+    assert stub.messages.calls[0]["max_tokens"] <= 300
+
+
 def test_generate_answer_sends_the_configured_model_name():
     stub = _StubAnthropic("irrelevant")
     client = AnthropicClaudeClient(stub, model="claude-haiku-4-5-20251001")
