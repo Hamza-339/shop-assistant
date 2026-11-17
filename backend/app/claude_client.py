@@ -15,10 +15,15 @@ even if the description is empty or thin. Do not say you have no information, an
 shopper check elsewhere, as long as the context contains a relevant entry. Do not invent details the \
 context doesn't support.
 
+Answer in 2-3 sentences of plain prose. Summarise the relevant point in your own words instead of \
+copying the context verbatim, and do not use headings, bullet points, or markdown formatting.
+
 Context:
 {context_text}
 
 Question: {question}"""
+
+_MAX_ANSWER_TOKENS = 250
 
 
 class ClaudeClient(Protocol):
@@ -42,7 +47,7 @@ class AnthropicClaudeClient:
         prompt = _GROUNDED_ANSWER_PROMPT.format(context_text=context_text, question=question)
         response = self._client.messages.create(
             model=self.model,
-            max_tokens=1024,
+            max_tokens=_MAX_ANSWER_TOKENS,
             messages=[{"role": "user", "content": prompt}],
         )
         return response.content[0].text
