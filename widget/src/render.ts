@@ -66,8 +66,18 @@ export function formatCitation(citation: Citation): string {
   return `${kindLabel} · ${citation.id}`;
 }
 
+const POLICY_SLUGS: Record<string, string> = {
+  refund: "refund-policy",
+  shipping: "shipping-policy",
+  privacy: "privacy-policy",
+  terms_of_service: "terms-of-service",
+};
+
 export function citationUrl(citation: Citation): string {
-  return citation.kind === "policy" ? `/policies/${citation.handle}` : `/products/${citation.handle}`;
+  if (citation.kind === "policy") {
+    return `/policies/${POLICY_SLUGS[citation.handle] ?? citation.handle}`;
+  }
+  return `/products/${citation.handle}`;
 }
 
 function escapeHtml(text: string): string {
