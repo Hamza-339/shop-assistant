@@ -174,7 +174,21 @@ describe("citationUrl", () => {
     ).toBe("/products/classic-cotton-t-shirt");
   });
 
-  it("links a policy citation to /policies/<type>", () => {
-    expect(citationUrl({ id: "refund", kind: "policy", handle: "refund" })).toBe("/policies/refund");
+  it("links a refund policy citation to /policies/refund-policy", () => {
+    expect(citationUrl({ id: "refund", kind: "policy", handle: "refund" })).toBe("/policies/refund-policy");
+  });
+
+  it("links a shipping policy citation to /policies/shipping-policy", () => {
+    expect(citationUrl({ id: "shipping", kind: "policy", handle: "shipping" })).toBe("/policies/shipping-policy");
+  });
+
+  it("links a privacy policy citation to /policies/privacy-policy", () => {
+    expect(citationUrl({ id: "privacy", kind: "policy", handle: "privacy" })).toBe("/policies/privacy-policy");
+  });
+
+  it("links a terms_of_service policy citation to /policies/terms-of-service", () => {
+    expect(citationUrl({ id: "terms_of_service", kind: "policy", handle: "terms_of_service" })).toBe(
+      "/policies/terms-of-service",
+    );
   });
 });
