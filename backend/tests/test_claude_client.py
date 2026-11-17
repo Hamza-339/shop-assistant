@@ -1,6 +1,6 @@
 import pytest
 
-from app.claude_client import DEFAULT_LLM_MODEL, AnthropicClaudeClient, claude_client_from_env
+from app.claude_client import _MAX_ANSWER_TOKENS, DEFAULT_LLM_MODEL, AnthropicClaudeClient, claude_client_from_env
 from app.store import StoreEntry
 
 
@@ -74,7 +74,7 @@ def test_generate_answer_caps_max_tokens_to_a_small_value():
 
     client.generate_answer("Question?", [])
 
-    assert stub.messages.calls[0]["max_tokens"] <= 300
+    assert stub.messages.calls[0]["max_tokens"] == _MAX_ANSWER_TOKENS
 
 
 def test_generate_answer_sends_the_configured_model_name():
