@@ -44,7 +44,7 @@ Both projects deploy to Vercel's free Hobby plan as separate Vercel projects poi
 
 ## Eval score
 
-90% (27/30) on the answer-quality eval set.
+93% (28/30) on the answer-quality eval set.
 
 ## Known limits
 
